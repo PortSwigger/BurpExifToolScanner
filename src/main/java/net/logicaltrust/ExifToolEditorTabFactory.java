@@ -10,6 +10,7 @@ public class ExifToolEditorTabFactory implements IMessageEditorTabFactory {
 	private final IBurpExtenderCallbacks callbacks;
 	private final ExifToolProcess exiftoolProcess;
 	private final SimpleLogger logger;
+	private ExifToolOptionsManager options;
 
 	public ExifToolEditorTabFactory(IBurpExtenderCallbacks callbacks, ExifToolProcess exiftoolProcess, SimpleLogger logger) {
 		this.callbacks = callbacks;
@@ -19,7 +20,12 @@ public class ExifToolEditorTabFactory implements IMessageEditorTabFactory {
 
 	@Override
 	public IMessageEditorTab createNewInstance(IMessageEditorController controller, boolean editable) {
-		return new ExifToolEditorTab(callbacks.createTextEditor(), exiftoolProcess, logger);
+		logger.debug("Creating ExifToolEditorTab");
+		return new ExifToolEditorTab(callbacks.createTextEditor(), exiftoolProcess, logger, options);
+	}
+
+	public void setOptionsManager(ExifToolOptionsManager options) {
+		this.options = options;
 	}
 
 }

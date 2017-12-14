@@ -59,9 +59,14 @@ public class ExifToolPanel extends JPanel implements ITab {
 		if (optionsManager.isMessageEditorOn()) {
 			chckbxMessageEditor.doClick();
 		}
+		
+		JCheckBox chckbxFullResultInMessageEditor = new JCheckBox("Full result in Message Editor");
+		chckbxFullResultInMessageEditor.addActionListener(e -> optionsManager.changeFullResultInMessageEditor(chckbxFullResultInMessageEditor.isSelected()));
+		chckbxFullResultInMessageEditor.setSelected(optionsManager.isFullResultInMessageEditor());
 
 		checkboxPanel.add(chckbxPassiveScan);
 		checkboxPanel.add(chckbxMessageEditor);
+		checkboxPanel.add(chckbxFullResultInMessageEditor);
 		checkboxPanel.add(chckbxDebug);
 		
 		JPanel tablesPanel = new JPanel();

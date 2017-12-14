@@ -15,10 +15,13 @@ public class ExifToolEditorTab implements IMessageEditorTab {
 	private final ExifToolProcess exiftoolProcess;
 	private final SimpleLogger logger;
 	private static final ExecutorService POOL = Executors.newCachedThreadPool();
+	private final ExifToolOptionsManager options;
+	
 
-	public ExifToolEditorTab(ITextEditor textEditor, ExifToolProcess exiftoolProcess, SimpleLogger logger) {
+	public ExifToolEditorTab(ITextEditor textEditor, ExifToolProcess exiftoolProcess, SimpleLogger logger, ExifToolOptionsManager options) {
 		this.textEditor = textEditor;
 		this.logger = logger;
+		this.options = options;
 		textEditor.setEditable(false);
 		this.exiftoolProcess = exiftoolProcess;
 	}
@@ -48,7 +51,8 @@ public class ExifToolEditorTab implements IMessageEditorTab {
 		if (!isRequest && content.length > 0) {
 			POOL.execute(() -> {
 				try {
-					List<String> metadata = exiftoolProcess.readMetadata(content);
+					logger.debug("Displaying full result " + options.isFullResultInMessageEditor());
+					List<String> metadata = exiftoolProcess.readMetadata(content, options.isFullResultInMessageEditor());
 					if (!metadata.isEmpty()) {
 						String metadataText = String.join("\n", metadata);
 						textEditor.setText(metadataText.getBytes(StandardCharsets.UTF_8));

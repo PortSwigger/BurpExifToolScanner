@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Vector;
+import java.util.stream.Stream;
 
 import javax.swing.table.DefaultTableModel;
 
@@ -91,5 +92,16 @@ public class ExifToolTableModel extends DefaultTableModel {
 	void replaceAllUndo(Collection<?> values) {
 		lastAction = null;
 		this.replaceAll(values, false);
+	}
+
+	public void addRows(Stream<String> lines) {
+		lastAction = new AddRowsUndoAction(getRowCount());
+		lines.forEach(line -> super.addRow(new Object[] { line }));
+	}
+
+	public void removeRowsFrom(int lastRowIndex) {
+		for (int i = getRowCount() - 1; i >= lastRowIndex; i--) {
+			super.removeRow(i);
+		}
 	}
 }

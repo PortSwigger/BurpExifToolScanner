@@ -6,6 +6,7 @@ import java.util.List;
 
 import burp.IExtensionHelpers;
 import burp.IHttpRequestResponse;
+import burp.IRequestInfo;
 import burp.IScanIssue;
 import burp.IScannerCheck;
 import burp.IScannerInsertionPoint;
@@ -29,10 +30,15 @@ public class ExifToolScannerCheck implements IScannerCheck {
 		try {
 			List<String> metadata = exiftoolProcess.readMetadataHtml(baseRequestResponse.getResponse());
 			if (!metadata.isEmpty()) {
-				StringBuilder htmlList = new StringBuilder("<ul>");
-				String filetype = fillHtmlList(metadata, htmlList);
-				logger.debug("Metadata read from exiftool [IScannerCheck] ");
-				return createIssues(baseRequestResponse, htmlList, filetype);
+				if (!hasError(metadata)) {
+					StringBuilder htmlList = new StringBuilder("<ul>");
+					String filetype = fillHtmlList(metadata, htmlList);
+					logger.debug("Metadata read from exiftool [IScannerCheck] ");
+					return createIssues(baseRequestResponse, htmlList, filetype);
+				} else {
+					IRequestInfo request = helpers.analyzeRequest(baseRequestResponse);
+					logger.debugForce("Cannot read metadata from " + request.getUrl() + ", " + metadata);
+				}
 			} else {
 				logger.debug("No data read from exiftool [IScannerCheck]");
 			}
@@ -41,6 +47,10 @@ public class ExifToolScannerCheck implements IScannerCheck {
 		}
 		
 		return null;
+	}
+	
+	private boolean hasError(List<String> metadata) {
+		return metadata.stream().anyMatch(e -> e.startsWith("Error: "));
 	}
 
 	private List<IScanIssue> createIssues(IHttpRequestResponse baseRequestResponse, StringBuilder list,

@@ -16,6 +16,7 @@ import java.nio.file.attribute.FileAttribute;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -31,6 +32,7 @@ public class ExifToolProcess implements IExtensionStateListener {
 	
 	private volatile Collection<String> typesToIgnore;
 	private volatile Collection<String> linesToIgnore;
+	private final Collection<String> ALWAYS_TO_IGNORE = Collections.unmodifiableCollection(Arrays.asList("Directory", "FileAccessDate", "FileInodeChangeDate", "FileModifyDate", "FileName", "FilePermissions"));
 	
 	private static final FileAttribute<Set<PosixFilePermission>> TEMP_FILE_PERMISSIONS = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rw-------"));
 	private static final FileAttribute<Set<PosixFilePermission>> TEMP_DIR_PERMISSIONS = PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------"));
@@ -78,11 +80,11 @@ public class ExifToolProcess implements IExtensionStateListener {
 	}
 	
 	public List<String> readMetadataHtml(byte[] response) throws IOException {
-		return readMetadata(response, "-m\n-S\n-E\n-sort\n");
+		return readMetadata(response, "-m\n-S\n-E\n-sort\n", false);
 	}
 	
-	public List<String> readMetadata(byte[] response) throws IOException {
-		return readMetadata(response, "-m\n-S\n-sort\n");
+	public List<String> readMetadata(byte[] response, boolean displayFullResult) throws IOException {
+		return readMetadata(response, "-m\n-S\n-sort\n", displayFullResult);
 	}
 	
 	public boolean canReadMetadata(byte[] response) {
@@ -97,7 +99,7 @@ public class ExifToolProcess implements IExtensionStateListener {
 		return responseInfo.getBodyOffset() == response.length;
 	}
 	
-	private List<String> readMetadata(byte[] response, String exifToolParams) throws IOException {
+	private List<String> readMetadata(byte[] response, String exifToolParams, boolean displayFullResult) throws IOException {
 		logger.debug("Reading metadata from response");
 		IResponseInfo responseInfo = helpers.analyzeResponse(response);
 		if (!isMimeTypeAppropriate(responseInfo)) {
@@ -109,7 +111,7 @@ public class ExifToolProcess implements IExtensionStateListener {
 		List<String> result;
 		synchronized (this) {
 			notifyExifTool(tmp, exifToolParams);
-			result = readResult();
+			result = readResult(displayFullResult);
 		}
 		logger.debug("Deleting temp file " + tmp);
 		Files.deleteIfExists(tmp);
@@ -157,12 +159,12 @@ public class ExifToolProcess implements IExtensionStateListener {
 		writer.flush();
 	}
 
-	private List<String> readResult() throws IOException {
+	private List<String> readResult(boolean displayFullResult) throws IOException {
 		logger.debug("Reading result from exiftool");
 		List<String> result = new ArrayList<>();
 		String line;
 		while ((line = reader.readLine()) != null && logger.debug(line) && !("{ready}".equals(line) || "{ready-}".equals(line))) {
-			if (isAppropriateLine(line)) {
+			if (notStartsWith(ALWAYS_TO_IGNORE, line) && (displayFullResult || notStartsWith(linesToIgnore, line))) {
 				result.add(line);
 			}
 		}
@@ -170,8 +172,8 @@ public class ExifToolProcess implements IExtensionStateListener {
 		return result;
 	}
 
-	private boolean isAppropriateLine(String line) {
-		return linesToIgnore.stream().noneMatch((lineToIgnore) -> line.startsWith(lineToIgnore));
+	private boolean notStartsWith(Collection<String> lines, String line) {
+		return lines.stream().noneMatch((lineToIgnore) -> line.startsWith(lineToIgnore));
 	}
 	
 	private boolean isWindows() {

@@ -10,7 +10,7 @@ import burp.IBurpExtenderCallbacks;
 public class ExifToolOptionsManager {
 
 	private static final Collection<String> DEFAULT_MIME_TYPES_TO_IGNORE = Arrays.asList("HTML", "JSON", "script", "CSS", "XML");
-	private static final Collection<String> DEFAULT_LINES_TO_IGNORE = Arrays.asList("ExifToolVersion", "Directory", "FileAccessDate", "FileInodeChangeDate", "FileModifyDate", "FileName", "FilePermissions", "FileSize");
+	private static final Collection<String> DEFAULT_LINES_TO_IGNORE = Arrays.asList("ExifToolVersion", "FileSize");
 	private static final String DELIMETER = "\n";
 	
 	private final String PASSIVE_SCAN = "PASSIVE_SCAN";
@@ -18,12 +18,15 @@ public class ExifToolOptionsManager {
 	private final String MIME_TYPES_TO_IGNORE = "MIME_TYPES_TO_IGNORE";
 	private final String LINES_TO_IGNORE = "LINES_TO_IGNORE";
 	private final String DEBUG_OUTPUT = "DEBUG_OUTPUT";
+	private final String FULL_RESULT_IN_MESSAGE_EDITOR = "FULL_RESULT_IN_MESSAGE_EDITOR";
 	
 	private final IBurpExtenderCallbacks callbacks;
 	private final ExifToolScannerCheck scanner;
 	private final ExifToolEditorTabFactory tabFactory;
 	private final ExifToolProcess exiftoolProcess;
 	private final SimpleLogger stdout;
+	
+	private volatile boolean fullResultInMessageEditor;
 
 	public ExifToolOptionsManager(IBurpExtenderCallbacks callbacks, ExifToolProcess exiftoolProcess,
 			ExifToolScannerCheck scanner, ExifToolEditorTabFactory tabFactory, SimpleLogger stdout) {
@@ -34,6 +37,7 @@ public class ExifToolOptionsManager {
 		this.stdout = stdout;
 		exiftoolProcess.setTypesToIgnore(getMimeTypesToIgnore());
 		exiftoolProcess.setLinesToIgnore(getLinesToIgnore());
+		fullResultInMessageEditor = loadSettingWithFallback(FULL_RESULT_IN_MESSAGE_EDITOR, false);
 	}
 	
 	public boolean isPassiveScanOn() {
@@ -46,6 +50,10 @@ public class ExifToolOptionsManager {
 	
 	public boolean isDebugOn() {
 		return loadSettingWithFallback(DEBUG_OUTPUT, false);
+	}
+	
+	public boolean isFullResultInMessageEditor() {
+		return fullResultInMessageEditor;
 	}
 	
 	private boolean loadSettingWithFallback(String optionName, boolean fallback) {
@@ -100,6 +108,11 @@ public class ExifToolOptionsManager {
 		} else {
 			stdout.disableDebug();
 		}
+	}
+	
+	public void changeFullResultInMessageEditor(boolean on) {
+		callbacks.saveExtensionSetting(FULL_RESULT_IN_MESSAGE_EDITOR, Boolean.toString(on));
+		fullResultInMessageEditor = on;
 	}
 	
 	public void updateMimeTypesToIgnore(Collection<String> mimeTypes) {
