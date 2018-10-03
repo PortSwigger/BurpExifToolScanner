@@ -64,10 +64,17 @@ public class ExifToolPanel extends JPanel implements ITab {
 		chckbxFullResultInMessageEditor.addActionListener(e -> optionsManager.changeFullResultInMessageEditor(chckbxFullResultInMessageEditor.isSelected()));
 		chckbxFullResultInMessageEditor.setSelected(optionsManager.isFullResultInMessageEditor());
 
+		JCheckBox chckbxReversePdf = new JCheckBox("Reverse PDF metadata (-PDF-update:all=)");
+		chckbxReversePdf.addActionListener(e -> optionsManager.changeReversePdf(chckbxReversePdf.isSelected()));
+		if (optionsManager.isReversePdf()) {
+			chckbxReversePdf.doClick();
+		}
+
 		checkboxPanel.add(chckbxPassiveScan);
 		checkboxPanel.add(chckbxMessageEditor);
 		checkboxPanel.add(chckbxFullResultInMessageEditor);
 		checkboxPanel.add(chckbxDebug);
+		checkboxPanel.add(chckbxReversePdf);
 		
 		JPanel tablesPanel = new JPanel();
 		add(tablesPanel, BorderLayout.CENTER);

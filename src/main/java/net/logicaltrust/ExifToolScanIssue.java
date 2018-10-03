@@ -13,14 +13,16 @@ public class ExifToolScanIssue implements IScanIssue {
 	private final IHttpRequestResponse[] httpMessages;
 	private final IHttpService httpService;
 	private final String issueName;
+	private final String issueBackground;
 
 	public ExifToolScanIssue(URL url, String issueDetail, IHttpRequestResponse[] httpMessages,
-			IHttpService httpService, String issueName) {
+			IHttpService httpService, String issueName, String issueBackground) {
 		this.url = url;
 		this.issueDetail = issueDetail;
 		this.httpMessages = httpMessages;
 		this.httpService = httpService;
 		this.issueName = issueName;
+		this.issueBackground = issueBackground;
 	}
 
 	@Override
@@ -50,7 +52,7 @@ public class ExifToolScanIssue implements IScanIssue {
 
 	@Override
 	public String getIssueBackground() {
-		return null;
+		return issueBackground;
 	}
 
 	@Override

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.logicaltrust</groupId>
   <artifactId>BurpExifToolScanner</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
   	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<plugins>

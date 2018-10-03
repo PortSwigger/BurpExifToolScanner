@@ -19,6 +19,7 @@ public class ExifToolOptionsManager {
 	private final String LINES_TO_IGNORE = "LINES_TO_IGNORE";
 	private final String DEBUG_OUTPUT = "DEBUG_OUTPUT";
 	private final String FULL_RESULT_IN_MESSAGE_EDITOR = "FULL_RESULT_IN_MESSAGE_EDITOR";
+	private final String REVERSE_PDF = "REVERSE_PDF";
 	
 	private final IBurpExtenderCallbacks callbacks;
 	private final ExifToolScannerCheck scanner;
@@ -27,6 +28,7 @@ public class ExifToolOptionsManager {
 	private final SimpleLogger stdout;
 	
 	private volatile boolean fullResultInMessageEditor;
+	private volatile boolean reversePdf;
 
 	public ExifToolOptionsManager(IBurpExtenderCallbacks callbacks, ExifToolProcess exiftoolProcess,
 			ExifToolScannerCheck scanner, ExifToolEditorTabFactory tabFactory, SimpleLogger stdout) {
@@ -55,7 +57,9 @@ public class ExifToolOptionsManager {
 	public boolean isFullResultInMessageEditor() {
 		return fullResultInMessageEditor;
 	}
-	
+
+	public boolean isReversePdf() { return loadSettingWithFallback(REVERSE_PDF, true); }
+
 	private boolean loadSettingWithFallback(String optionName, boolean fallback) {
 		String setting = callbacks.loadExtensionSetting(optionName);
 		return setting != null ? Boolean.parseBoolean(setting) : fallback;
@@ -90,6 +94,12 @@ public class ExifToolOptionsManager {
 		} else {
 			callbacks.removeScannerCheck(scanner);
 		}
+	}
+
+	public void changeReversePdf(boolean on) {
+		callbacks.saveExtensionSetting(REVERSE_PDF, Boolean.toString(on));
+		reversePdf = on;
+		scanner.updateReversePdf(on);
 	}
 	
 	public void changeMessageEditor(boolean on) {

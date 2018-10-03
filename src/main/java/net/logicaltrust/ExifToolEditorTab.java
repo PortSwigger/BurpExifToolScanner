@@ -16,7 +16,6 @@ public class ExifToolEditorTab implements IMessageEditorTab {
 	private final SimpleLogger logger;
 	private static final ExecutorService POOL = Executors.newCachedThreadPool();
 	private final ExifToolOptionsManager options;
-	
 
 	public ExifToolEditorTab(ITextEditor textEditor, ExifToolProcess exiftoolProcess, SimpleLogger logger, ExifToolOptionsManager options) {
 		this.textEditor = textEditor;
@@ -51,12 +50,20 @@ public class ExifToolEditorTab implements IMessageEditorTab {
 		if (!isRequest && content.length > 0) {
 			POOL.execute(() -> {
 				try {
+					boolean reversePdf = options.isReversePdf();
 					logger.debug("Displaying full result " + options.isFullResultInMessageEditor());
-					List<String> metadata = exiftoolProcess.readMetadata(content, options.isFullResultInMessageEditor());
-					if (!metadata.isEmpty()) {
-						String metadataText = String.join("\n", metadata);
-						textEditor.setText(metadataText.getBytes(StandardCharsets.UTF_8));
+					List<List<String>> result = exiftoolProcess.readMetadata(content, options.isFullResultInMessageEditor(), reversePdf);
+					if (result.size() == 1) {
+						textEditor.setText(extractMetadata(result, ExifToolResultEnum.NORMAL).getBytes(StandardCharsets.UTF_8));
 						logger.debug("Metadata read from exiftool [IMessageEditorTab] ");
+					} else if (reversePdf && result.size() > 1) {
+						StringBuilder text = new StringBuilder();
+						text.append("# Original\n")
+								.append(extractMetadata(result, ExifToolResultEnum.NORMAL))
+								.append("\n\n# Reversed (-PDF-update:all=)\n")
+								.append(extractMetadata(result, ExifToolResultEnum.REVERSE_PDF));
+						textEditor.setText(text.toString().getBytes(StandardCharsets.UTF_8));
+						logger.debug("Reversed metadata read from exiftool [IMessageEditorTab] ");
 					} else {
 						logger.debug("No data read from exiftool [IMessageEditorTab]");
 					}
@@ -65,7 +72,12 @@ public class ExifToolEditorTab implements IMessageEditorTab {
 				}
 			});
 		}
+	}
 
+	private String extractMetadata(List<List<String>> result, ExifToolResultEnum index) {
+		List<String> metadata = result.get(index.getIndex());
+		String metadataText = String.join("\n", metadata);
+		return metadataText;
 	}
 
 	@Override
