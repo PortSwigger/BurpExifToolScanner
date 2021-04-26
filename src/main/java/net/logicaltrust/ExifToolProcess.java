@@ -231,13 +231,13 @@ public class ExifToolProcess implements IExtensionStateListener {
 		if (isWindows()) {
 			return extractResource("/exiftool.exe", ".exe");
 		} else {
-			Path archive = extractResource("/Image-ExifTool-11.10.tar.gz", ".tar.gz");
+			Path archive = extractResource("/Image-ExifTool-12.25.tar.gz", ".tar.gz");
 			Process process = new ProcessBuilder("tar", "xf", archive.toString(), "-C", tempDirectory.toString()).start();
 			process.waitFor(30, TimeUnit.SECONDS);
 			if (process.exitValue() != 0) {
 				throw new ExtensionInitException("Failed to extract tar.gz archive");
 			}
-			return tempDirectory.resolve(Paths.get("Image-ExifTool-11.10", "exiftool"));
+			return tempDirectory.resolve(Paths.get("Image-ExifTool-12.25", "exiftool"));
 		}
 	}
 
