@@ -2,11 +2,12 @@ Uuid: 858352a27e6e4a6caa802e61fdeb7dd4
 ExtensionType: 1
 Name: ExifTool Scanner
 RepoName: exiftool-scanner
-ScreenVersion: 1.0.8
-SerialVersion: 4
+ScreenVersion: 1.0.9
+SerialVersion: 5
 MinPlatformVersion: 0
 ProOnly: False
 Author: Michal Dardas
 ShortDescription: Reads metadata from various file types (JPEG, PNG, PDF, DOC, and much more) using ExifTool.
-EntryPoint: target/BurpExifToolScanner-1.0.8.jar
+EntryPoint: target/BurpExifToolScanner-1.0.9.jar
 BuildCommand: mvn package -DskipTests=true -Dmaven.javadoc.skip=true -B
+SupportedProducts: Pro, Community 
